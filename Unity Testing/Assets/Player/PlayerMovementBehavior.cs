@@ -9,11 +9,7 @@ public class PlayerMovementBehavior : MonoBehaviour
 
     [Header("Movement Settings")]
     public float movementSpeed = 3f;
-
-    [Header("Set velocity")]
-    public Vector3 velocityToSet;
-    public bool setVelocityNow;
-
+    
     // Stored Values
     private Camera mainCamera;
     private Vector3 movementDirection;
@@ -21,6 +17,20 @@ public class PlayerMovementBehavior : MonoBehaviour
     //////////////////////////////////////////////
     // Set values
     //////////////////////////////////////////////
+    //*/
+    [Header("Set velocity")]
+    public Vector3 velocityToSet;
+    public bool setVelocityNow;
+
+    [Header("Set angular velocity")]
+    public Vector3 angularVelocityToSet;
+    public bool setAngularVelocityNow;
+
+    [Header("Set force")]
+    public Vector3 forceToSet;
+    public ForceMode forceModeToSet;
+    public bool setForceNow;
+    public bool setContinuously;
 
     private void Update()
     {
@@ -29,13 +39,24 @@ public class PlayerMovementBehavior : MonoBehaviour
             playerRidgidbody.velocity = velocityToSet;
             setVelocityNow = false;
         }
+        if (setAngularVelocityNow)
+        {
+            playerRidgidbody.angularVelocity = angularVelocityToSet;
+            setAngularVelocityNow = false;
+        }
+        if (setForceNow)
+        {
+            playerRidgidbody.AddForce(forceToSet, forceModeToSet);
+            setForceNow = false;
+        }
     }
-
+    //*/
     //////////////////////////////////////////////
 
     public void SetupBehavior()
     {
         SetGameplayCamera();
+        //playerRidgidbody.AddForce(new Vector3(0, 9.81f, 0));
     }
 
     void SetGameplayCamera()
@@ -52,7 +73,13 @@ public class PlayerMovementBehavior : MonoBehaviour
     {
         MoveThePlayer();
 
-        Debug.Log(playerRidgidbody.velocity);
+        if (setContinuously)
+            playerRidgidbody.AddForce(forceToSet, forceModeToSet);
+
+        //playerRidgidbody.AddForce(new Vector3(0, 9.81f * playerRidgidbody.mass, 0), ForceMode.Force);
+
+        Vector2 v = playerRidgidbody.velocity;
+        Debug.Log(v);
     }
 
     void MoveThePlayer()

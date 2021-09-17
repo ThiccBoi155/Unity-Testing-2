@@ -25,7 +25,11 @@ public class PlayerController : MonoBehaviour
     {
         if (value.started)
         {
-            Debug.Log("Jump");
+            playerMovementBehavior.SetJump(true);
+        }
+        else
+        {
+            playerMovementBehavior.SetJump(false);
         }
     }
 
@@ -33,9 +37,6 @@ public class PlayerController : MonoBehaviour
     {
         Vector2 inputMovement = value.ReadValue<Vector2>();
         rawInputMovement = new Vector3(inputMovement.x, 0, inputMovement.y);
-
-        Debug.Log(inputMovement);
-        
     }
 
     private void Update()

@@ -46,6 +46,17 @@
                     "isPartOfComposite": false
                 },
                 {
+                    "name": "",
+                    "id": "7c4d2a28-6a52-4196-88ee-b57d6a028fe1",
+                    "path": "<Keyboard>/k",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
                     "name": "WASD Keys",
                     "id": "c0582e9b-9070-4c81-b030-f21766dd50cc",
                     "path": "2DVector",

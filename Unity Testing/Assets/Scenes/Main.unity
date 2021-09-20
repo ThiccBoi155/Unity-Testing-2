@@ -471,11 +471,11 @@ GameObject:
   - component: {fileID: 354481576}
   - component: {fileID: 354481575}
   - component: {fileID: 354481574}
+  - component: {fileID: 354481581}
   - component: {fileID: 354481573}
   - component: {fileID: 354481578}
   - component: {fileID: 354481579}
   - component: {fileID: 354481580}
-  - component: {fileID: 354481581}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged

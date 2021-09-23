@@ -44,17 +44,14 @@ public class CameraBehavior : MonoBehaviour
     public float rotationSpeed;
     public float maxRotationX = 89;
     public float minRotationX = -70;
+    public float maxCameraDistance = 8;
 
-    public float cameraDistance = 8;
+    private float cameraDistance;
 
     private Vector2 gamepadLook;
     private Vector3 eulerAngleRotation;
 
-    private void Start()
-    {
-        CameraLookAtOrigin();
-    }
-
+    //////////////////////////////////////////////
     void FixedUpdate()
     {
         //DebugFunctions();
@@ -64,6 +61,8 @@ public class CameraBehavior : MonoBehaviour
         if (followPlayer)
             FollowPlayer();
         RotateCamera();
+
+        CameraRay();
         SetCameraDistance();
     }
 
@@ -85,20 +84,43 @@ public class CameraBehavior : MonoBehaviour
         // Set rotation to eulerAngleRotation
         transform.Rotate(eulerAngleRotation, Space.World);
     }
-    
-    void CameraLookAtOrigin()
-    {
-        followCamera.LookAt(transform);
-    }
 
     void FollowPlayer()
     {
         transform.position = Vector3.Lerp(transform.position, player.position, followSpeed * Time.fixedDeltaTime);
     }
-    //////////////////////////////////////////////
+    
     void SetCameraDistance()
     {
         followCamera.localPosition = new Vector3(0, 0, -cameraDistance);
+    }
+
+    void CameraRay()
+    {
+        RaycastHit hit;
+        bool b = Physics.Raycast(transform.position, -transform.forward, out hit, maxCameraDistance);
+
+        Debug.Log(b);
+
+        if (b)
+        {
+            cameraDistance = hit.distance;
+            Debug.Log(hit.transform.name);
+        }
+        else
+            cameraDistance = maxCameraDistance;
+    }
+    //////////////////////////////////////////////
+    private void Start()
+    {
+        CameraLookAtOrigin();
+
+        cameraDistance = maxCameraDistance;
+    }
+
+    void CameraLookAtOrigin()
+    {
+        followCamera.LookAt(transform);
     }
     //////////////////////////////////////////////
     public void UpdateCameraLook(Vector2 look)

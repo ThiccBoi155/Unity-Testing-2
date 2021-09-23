@@ -32,8 +32,8 @@ public class CameraBehavior : MonoBehaviour
 
     [Header("Other debug values")]
     public bool followPlayer;
-    public bool enableMeshRenderer;
-    public MeshRenderer meshRenderer;
+    public RefrenceSetActive[] debugMeshRefrences;
+    
 
     [Header("Refrences")]
     public Transform player;
@@ -44,9 +44,10 @@ public class CameraBehavior : MonoBehaviour
     public float rotationSpeed;
     public float maxRotationX = 89;
     public float minRotationX = -70;
-    public float maxCameraDistance = 8;
+    public float maxCamDis = 8;
 
-    private float cameraDistance;
+    private float targetCamDis;
+    private float currentCamDis;
 
     private Vector2 gamepadLook;
     private Vector3 eulerAngleRotation;
@@ -54,16 +55,25 @@ public class CameraBehavior : MonoBehaviour
     //////////////////////////////////////////////
     void FixedUpdate()
     {
-        //DebugFunctions();
+        // Debug
+        foreach (RefrenceSetActive meshRef in debugMeshRefrences)
+            meshRef.SetActive();
 
-        meshRenderer.enabled = enableMeshRenderer;
+        // Max
+        debugMeshRefrences[1].obj.transform.localPosition = new Vector3(0, 0, -maxCamDis);
+        // Target
+        debugMeshRefrences[2].obj.transform.localPosition = new Vector3(0, 0, -targetCamDis);
 
+        // Other
         if (followPlayer)
             FollowPlayer();
+
         RotateCamera();
 
-        CameraRay();
-        SetCameraDistance();
+        // Camera Distance
+        CalculateTargetCamDis();
+        CalculateCurrentCamDis();
+        SetCamDis();
     }
 
     void RotateCamera()
@@ -89,33 +99,46 @@ public class CameraBehavior : MonoBehaviour
     {
         transform.position = Vector3.Lerp(transform.position, player.position, followSpeed * Time.fixedDeltaTime);
     }
-    
-    void SetCameraDistance()
+    //////////////////////////////////////////////
+    // Camera distance / CamDis
+    //////////////////////////////////////////////
+    void CalculateTargetCamDis()
     {
-        followCamera.localPosition = new Vector3(0, 0, -cameraDistance);
-    }
-
-    void CameraRay()
-    {
+        targetCamDis = 6;
+        /*
         RaycastHit hit;
-        bool b = Physics.Raycast(transform.position, -transform.forward, out hit, maxCameraDistance);
+        bool b = Physics.Raycast(transform.position, -transform.forward, out hit, maxCamDis);
 
         Debug.Log(b);
 
         if (b)
         {
-            cameraDistance = hit.distance;
+            targetCamDis = hit.distance;
             Debug.Log(hit.transform.name);
         }
         else
-            cameraDistance = maxCameraDistance;
+            targetCamDis = maxCamDis;
+        //*/
     }
+
+    void CalculateCurrentCamDis()
+    {
+        currentCamDis = 4;
+        //currentCamDis = targetCamDis;
+    }
+
+    void SetCamDis()
+    {
+        followCamera.localPosition = new Vector3(0, 0, -currentCamDis);
+    }
+    //////////////////////////////////////////////
+    // Start functions
     //////////////////////////////////////////////
     private void Start()
     {
         CameraLookAtOrigin();
 
-        cameraDistance = maxCameraDistance;
+        targetCamDis = maxCamDis;
     }
 
     void CameraLookAtOrigin()

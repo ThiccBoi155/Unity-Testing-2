@@ -33,21 +33,30 @@ public class CameraBehavior : MonoBehaviour
     [Header("Other debug values")]
     public bool followPlayer;
     public RefrenceSetActive[] debugMeshRefrences;
-    
 
     [Header("Refrences")]
     public Transform player;
     public Transform followCamera;
+    public Transform maxCamDisCollider;
 
     [Header("Continuous Settings")]
-    public float followSpeed;
+    public float originFollowSpeed;
     public float rotationSpeed;
     public float maxRotationX = 89;
     public float minRotationX = -70;
     public float maxCamDis = 8;
+    public float camDisFollowSpeed;
 
+    [Header("Private fields")]
+    [SerializeField]
     private float targetCamDis;
+    [SerializeField]
     private float currentCamDis;
+    
+    [SerializeField]
+    private bool camColliding = false;
+    [SerializeField]
+    private bool wallDetected = false;
 
     private Vector2 gamepadLook;
     private Vector3 eulerAngleRotation;
@@ -60,7 +69,7 @@ public class CameraBehavior : MonoBehaviour
             meshRef.SetActive();
 
         // Max
-        debugMeshRefrences[1].obj.transform.localPosition = new Vector3(0, 0, -maxCamDis);
+        //debugMeshRefrences[1].obj.transform.localPosition = new Vector3(0, 0, -maxCamDis);
         // Target
         debugMeshRefrences[2].obj.transform.localPosition = new Vector3(0, 0, -targetCamDis);
 
@@ -71,6 +80,8 @@ public class CameraBehavior : MonoBehaviour
         RotateCamera();
 
         // Camera Distance
+        SetMaxCamDisCollider();
+
         CalculateTargetCamDis();
         CalculateCurrentCamDis();
         SetCamDis();
@@ -97,34 +108,75 @@ public class CameraBehavior : MonoBehaviour
 
     void FollowPlayer()
     {
-        transform.position = Vector3.Lerp(transform.position, player.position, followSpeed * Time.fixedDeltaTime);
+        transform.position = Vector3.Lerp(transform.position, player.position, originFollowSpeed * Time.fixedDeltaTime);
     }
     //////////////////////////////////////////////
     // Camera distance / CamDis
     //////////////////////////////////////////////
-    void CalculateTargetCamDis()
+    void SetMaxCamDisCollider()
     {
-        targetCamDis = 6;
-        /*
-        RaycastHit hit;
-        bool b = Physics.Raycast(transform.position, -transform.forward, out hit, maxCamDis);
+        maxCamDisCollider.localPosition = new Vector3(0, 0, -maxCamDis);
+    }
 
-        Debug.Log(b);
+    void CheckMaxCamDisCollision()
+    {
+        RaycastHit hit;
+        bool b = Physics.Raycast(maxCamDisCollider.position, -transform.forward, out hit, 1);
 
         if (b)
         {
-            targetCamDis = hit.distance;
-            Debug.Log(hit.transform.name);
+            Debug.Log($"Distance: {hit.distance}, collider object name: {hit.transform.name}");
+        }
+    }
+
+    void CalculateTargetCamDis()
+    {
+        // Get ray distance
+        float rayDistance;
+        
+        if (camColliding || wallDetected)
+            rayDistance = GetRayDistance();
+        else
+            rayDistance = -1;
+
+        // Set target cam distance
+        if (rayDistance != -1)
+        {
+            wallDetected = true;
+            targetCamDis = rayDistance;
+            if (currentCamDis > targetCamDis)
+                currentCamDis = targetCamDis;
+
+            ///if (rayDistance < 1)
+            //    Debug.Log("why?");
         }
         else
+        {
+            wallDetected = false;
             targetCamDis = maxCamDis;
-        //*/
+        }
+    }
+
+    float GetRayDistance()
+    {
+        RaycastHit hit;
+        bool hitBool = Physics.Raycast(transform.position, -transform.forward, out hit, maxCamDis);
+
+        ///Debug.Log(hitBool);
+
+        if (hitBool)
+        {
+            ///if (hit.distance < 1)
+            //    Debug.Log(hit.transform.name);
+            return hit.distance;
+        }
+        else
+            return -1;
     }
 
     void CalculateCurrentCamDis()
     {
-        currentCamDis = 4;
-        //currentCamDis = targetCamDis;
+        currentCamDis = Mathf.Lerp(currentCamDis, targetCamDis, camDisFollowSpeed * Time.fixedDeltaTime);
     }
 
     void SetCamDis()
@@ -149,5 +201,10 @@ public class CameraBehavior : MonoBehaviour
     public void UpdateCameraLook(Vector2 look)
     {
         gamepadLook = look;
+    }
+
+    public void SetCollision(bool b)
+    {
+        camColliding = b;
     }
 }

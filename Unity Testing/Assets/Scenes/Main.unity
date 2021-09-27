@@ -313,7 +313,7 @@ GameObject:
   - component: {fileID: 81137537}
   - component: {fileID: 81137539}
   - component: {fileID: 81137538}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Max Cam Dis Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -491,7 +491,7 @@ GameObject:
   - component: {fileID: 201740218}
   - component: {fileID: 201740221}
   - component: {fileID: 201740220}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Current Cam Dis Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -673,7 +673,7 @@ GameObject:
   - component: {fileID: 354481579}
   - component: {fileID: 354481578}
   - component: {fileID: 354481580}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1455,7 +1455,7 @@ GameObject:
   m_Component:
   - component: {fileID: 827042609}
   - component: {fileID: 827042610}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Camera Origin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1492,7 +1492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2dcc5ab16b06cf419f8d7486daa986b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followPlayer: 1
+  followPlayer: 0
   debugMeshRefrences:
   - obj: {fileID: 1509619367}
     enable: 1
@@ -1505,11 +1505,19 @@ MonoBehaviour:
   player: {fileID: 354481577}
   followCamera: {fileID: 1900214266}
   maxCamDisCollider: {fileID: 2111726029}
-  followSpeed: 5
+  originFollowSpeed: 5
   rotationSpeed: 100
   maxRotationX: 89.99
   minRotationX: -70
   maxCamDis: 8
+  camDisFollowSpeed: 5
+  camCollisionLayerMask:
+    serializedVersion: 2
+    m_Bits: 51
+  targetCamDis: 0
+  currentCamDis: 0
+  camColliding: 0
+  wallDetected: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1726,7 +1734,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &1376650550
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1844,7 +1852,7 @@ GameObject:
   - component: {fileID: 1509619368}
   - component: {fileID: 1509619370}
   - component: {fileID: 1509619369}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Camera Origin Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1926,7 +1934,7 @@ GameObject:
   - component: {fileID: 1548897567}
   - component: {fileID: 1548897569}
   - component: {fileID: 1548897568}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Target Cam Dis Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2105,7 +2113,7 @@ GameObject:
   - component: {fileID: 1880526825}
   - component: {fileID: 1880526824}
   - component: {fileID: 1880526823}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2201,7 +2209,10 @@ GameObject:
   - component: {fileID: 1900214266}
   - component: {fileID: 1900214268}
   - component: {fileID: 1900214267}
-  m_Layer: 0
+  - component: {fileID: 1900214270}
+  - component: {fileID: 1900214269}
+  - component: {fileID: 1900214271}
+  m_Layer: 6
   m_Name: Follow Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -2215,14 +2226,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1900214265}
-  m_LocalRotation: {x: 0.36141753, y: -0.14184368, z: 0.055730764, w: 0.91986513}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 201740218}
   m_Father: {fileID: 827042609}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 42.9, y: -17.532, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!81 &1900214267
 AudioListener:
   m_ObjectHideFlags: 0
@@ -2274,6 +2285,48 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1900214269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1900214265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed31b7fff8993364197274e1a1e005fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraBehavior: {fileID: 827042610}
+--- !u!135 &1900214270
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1900214265}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.25
+  m_Center: {x: 0, y: 0, z: 0.25}
+--- !u!54 &1900214271
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1900214265}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1996340411
 GameObject:
   m_ObjectHideFlags: 0
@@ -2366,7 +2419,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2111726029}
-  m_Layer: 2
+  - component: {fileID: 2111726032}
+  - component: {fileID: 2111726031}
+  - component: {fileID: 2111726030}
+  m_Layer: 6
   m_Name: Max Cam Dis Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2388,3 +2444,45 @@ Transform:
   m_Father: {fileID: 827042609}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2111726030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111726028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed31b7fff8993364197274e1a1e005fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraBehavior: {fileID: 827042610}
+--- !u!135 &2111726031
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111726028}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 0.25
+  m_Center: {x: 0, y: 0, z: 0.25}
+--- !u!54 &2111726032
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2111726028}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

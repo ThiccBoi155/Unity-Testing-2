@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class CameraBehavior : MonoBehaviour
 {
@@ -46,6 +47,7 @@ public class CameraBehavior : MonoBehaviour
     public float minRotationX = -70;
     public float maxCamDis = 8;
     public float camDisFollowSpeed;
+    public LayerMask camCollisionLayerMask;
 
     [Header("Private fields")]
     [SerializeField]
@@ -160,7 +162,7 @@ public class CameraBehavior : MonoBehaviour
     float GetRayDistance()
     {
         RaycastHit hit;
-        bool hitBool = Physics.Raycast(transform.position, -transform.forward, out hit, maxCamDis);
+        bool hitBool = Physics.Raycast(transform.position, -transform.forward, out hit, maxCamDis, camCollisionLayerMask);
 
         ///Debug.Log(hitBool);
 

@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     public CameraBehavior cameraBehavior;
 
     private Vector3 rawInputMovement;
-    private Vector2 lookInput;
+    private Vector2 camRotationInput;
 
     private void Start()
     {
@@ -41,24 +41,24 @@ public class PlayerController : MonoBehaviour
         rawInputMovement = new Vector3(inputMovement.x, 0, inputMovement.y);
     }
 
-    public void OnLook(InputAction.CallbackContext value)
+    public void OnCamRotation(InputAction.CallbackContext value)
     {
-        lookInput = value.ReadValue<Vector2>();
+        camRotationInput = value.ReadValue<Vector2>();
     }
 
     private void Update()
     {
         UpdatePlayerMovement();
-        UpdateCameraLook();
-    }
-
-    private void UpdateCameraLook()
-    {
-        cameraBehavior.UpdateCameraLook(lookInput);
+        UpdateCamRotation();
     }
 
     private void UpdatePlayerMovement()
     {
         playerMovementBehavior.UpdateMovementData(rawInputMovement);
+    }
+
+    private void UpdateCamRotation()
+    {
+        cameraBehavior.UpdateCamRotation(camRotationInput);
     }
 }

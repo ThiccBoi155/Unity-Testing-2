@@ -42,9 +42,11 @@ public class CameraBehavior : MonoBehaviour
 
     [Header("Continuous Settings")]
     public float originFollowSpeed;
+
     public float rotationSpeed;
     public float maxRotationX = 89;
     public float minRotationX = -70;
+
     public float maxCamDis = 8;
     public float camDisFollowSpeed;
     public LayerMask camCollisionLayerMask;
@@ -60,7 +62,7 @@ public class CameraBehavior : MonoBehaviour
     [SerializeField]
     private bool wallDetected = false;
 
-    private Vector2 gamepadLook;
+    private Vector2 gamepadCamRotation;
     private Vector3 eulerAngleRotation;
 
     //////////////////////////////////////////////
@@ -83,17 +85,21 @@ public class CameraBehavior : MonoBehaviour
 
         // Camera Distance
         SetMaxCamDisCollider();
-
         CalculateTargetCamDis();
         CalculateCurrentCamDis();
         SetCamDis();
     }
 
+    void FollowPlayer()
+    {
+        transform.position = Vector3.Lerp(transform.position, player.position, originFollowSpeed * Time.fixedDeltaTime);
+    }
+
     void RotateCamera()
     {
         // Set eulerAngleRotation
-        eulerAngleRotation.x += -gamepadLook.y * rotationSpeed * Time.fixedDeltaTime;
-        eulerAngleRotation.y += gamepadLook.x * rotationSpeed * Time.fixedDeltaTime;
+        eulerAngleRotation.x += -gamepadCamRotation.y * rotationSpeed * Time.fixedDeltaTime;
+        eulerAngleRotation.y += gamepadCamRotation.x * rotationSpeed * Time.fixedDeltaTime;
 
         if (eulerAngleRotation.x < minRotationX)
             eulerAngleRotation.x = minRotationX;
@@ -106,11 +112,6 @@ public class CameraBehavior : MonoBehaviour
 
         // Set rotation to eulerAngleRotation
         transform.Rotate(eulerAngleRotation, Space.World);
-    }
-
-    void FollowPlayer()
-    {
-        transform.position = Vector3.Lerp(transform.position, player.position, originFollowSpeed * Time.fixedDeltaTime);
     }
     //////////////////////////////////////////////
     // Camera distance / CamDis
@@ -200,9 +201,9 @@ public class CameraBehavior : MonoBehaviour
         followCamera.LookAt(transform);
     }
     //////////////////////////////////////////////
-    public void UpdateCameraLook(Vector2 look)
+    public void UpdateCamRotation(Vector2 camRotation)
     {
-        gamepadLook = look;
+        gamepadCamRotation = camRotation;
     }
 
     public void SetCollision(bool b)

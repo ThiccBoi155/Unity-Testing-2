@@ -1605,6 +1605,7 @@ MonoBehaviour:
   maxCamDisCollider: {fileID: 2111726029}
   originFollowSpeed: 5
   rotationSpeed: 100
+  gamepadSmoothing: 12
   maxRotationX: 89.99
   minRotationX: -70
   maxCamDis: 6

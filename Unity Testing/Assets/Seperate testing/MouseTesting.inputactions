@@ -1,0 +1,45 @@
+{
+    "name": "MouseTesting",
+    "maps": [
+        {
+            "name": "Yes",
+            "id": "f6df2067-ba93-4229-8306-921f471c0c5b",
+            "actions": [
+                {
+                    "name": "Pointer position",
+                    "type": "Value",
+                    "id": "1315590a-cd72-41f5-8418-0d381d969f49",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "7a4baa8c-1712-4cb4-8818-67c92cb6c2af",
+                    "path": "<Pointer>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse",
+                    "action": "Pointer position",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Mouse",
+            "bindingGroup": "Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}

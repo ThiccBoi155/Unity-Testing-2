@@ -44,6 +44,7 @@ public class CameraBehavior : MonoBehaviour
     public float originFollowSpeed;
 
     public float rotationSpeed;
+    public float gamepadSmoothing;
     public float maxRotationX = 89;
     public float minRotationX = -70;
 
@@ -56,13 +57,14 @@ public class CameraBehavior : MonoBehaviour
     private float targetCamDis;
     [SerializeField]
     private float currentCamDis;
-    
+
     [SerializeField]
     private bool camColliding = false;
     [SerializeField]
     private bool wallDetected = false;
 
-    private Vector2 gamepadCamRotation;
+    private Vector2 rawGamepadInput;
+    private Vector2 smoothGamepadInput;
     private Vector3 eulerAngleRotation;
 
     //////////////////////////////////////////////
@@ -81,7 +83,11 @@ public class CameraBehavior : MonoBehaviour
         if (followPlayer)
             FollowPlayer();
 
+        CalculateSmoothGamepadInput();
         RotateCamera();
+
+        //float f = rawGamepadInput.magnitude * rotationSpeed * Time.fixedDeltaTime;
+        //Debug.Log($"{rawGamepadInput}, {f}");
 
         // Camera Distance
         SetMaxCamDisCollider();
@@ -95,11 +101,16 @@ public class CameraBehavior : MonoBehaviour
         transform.position = Vector3.Lerp(transform.position, player.position, originFollowSpeed * Time.fixedDeltaTime);
     }
 
+    void CalculateSmoothGamepadInput()
+    {
+        smoothGamepadInput = Vector2.Lerp(smoothGamepadInput, rawGamepadInput, gamepadSmoothing * Time.fixedDeltaTime);
+    }
+
     void RotateCamera()
     {
         // Set eulerAngleRotation
-        eulerAngleRotation.x += -gamepadCamRotation.y * rotationSpeed * Time.fixedDeltaTime;
-        eulerAngleRotation.y += gamepadCamRotation.x * rotationSpeed * Time.fixedDeltaTime;
+        eulerAngleRotation.x += -smoothGamepadInput.y * rotationSpeed * Time.fixedDeltaTime;
+        eulerAngleRotation.y += smoothGamepadInput.x * rotationSpeed * Time.fixedDeltaTime;
 
         if (eulerAngleRotation.x < minRotationX)
             eulerAngleRotation.x = minRotationX;
@@ -136,7 +147,7 @@ public class CameraBehavior : MonoBehaviour
     {
         // Get ray distance
         float rayDistance;
-        
+
         if (camColliding || wallDetected)
             rayDistance = GetRayDistance();
         else
@@ -203,7 +214,7 @@ public class CameraBehavior : MonoBehaviour
     //////////////////////////////////////////////
     public void UpdateCamRotation(Vector2 camRotation)
     {
-        gamepadCamRotation = camRotation;
+        rawGamepadInput = camRotation;
     }
 
     public void SetCollision(bool b)

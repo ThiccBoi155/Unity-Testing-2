@@ -5,40 +5,12 @@ using System;
 
 public class CameraBehavior : MonoBehaviour
 {
-    #region Debug
-    /*/
-    [Header("Debug values")]
-    public bool rotateX;
-    public bool rotateY;
-    public Vector3 customRotation;
-    public bool applyCustomRotation;
-    public bool resetRotation;
-
-    void DebugFunctions()
-    {
-        if (applyCustomRotation)
-        {
-            transform.Rotate(customRotation, Space.World);
-            applyCustomRotation = false;
-        }
-
-        if (resetRotation)
-        {
-            transform.rotation = new Quaternion();
-            resetRotation = false;
-        }
-    }
-    //*/
-    #endregion
-
     [Header("Other debug values")]
     public bool followPlayer;
-    public RefrenceSetActive[] debugMeshRefrences;
 
     [Header("Refrences")]
     public Transform player;
     public Transform followCamera;
-    public Transform maxCamDisCollider;
 
     [Header("Continuous Settings")]
     public float originFollowSpeed;
@@ -70,15 +42,6 @@ public class CameraBehavior : MonoBehaviour
     //////////////////////////////////////////////
     void FixedUpdate()
     {
-        // Debug
-        foreach (RefrenceSetActive meshRef in debugMeshRefrences)
-            meshRef.SetActive();
-
-        // Max
-        //debugMeshRefrences[1].obj.transform.localPosition = new Vector3(0, 0, -maxCamDis);
-        // Target
-        debugMeshRefrences[2].obj.transform.localPosition = new Vector3(0, 0, -targetCamDis);
-
         // Other
         if (followPlayer)
             FollowPlayer();
@@ -86,11 +49,7 @@ public class CameraBehavior : MonoBehaviour
         CalculateSmoothGamepadInput();
         RotateCamera();
 
-        //float f = rawGamepadInput.magnitude * rotationSpeed * Time.fixedDeltaTime;
-        //Debug.Log($"{rawGamepadInput}, {f}");
-
         // Camera Distance
-        SetMaxCamDisCollider();
         CalculateTargetCamDis();
         CalculateCurrentCamDis();
         SetCamDis();
@@ -127,22 +86,6 @@ public class CameraBehavior : MonoBehaviour
     //////////////////////////////////////////////
     // Camera distance / CamDis
     //////////////////////////////////////////////
-    void SetMaxCamDisCollider()
-    {
-        maxCamDisCollider.localPosition = new Vector3(0, 0, -maxCamDis);
-    }
-
-    void CheckMaxCamDisCollision()
-    {
-        RaycastHit hit;
-        bool b = Physics.Raycast(maxCamDisCollider.position, -transform.forward, out hit, 1);
-
-        if (b)
-        {
-            Debug.Log($"Distance: {hit.distance}, collider object name: {hit.transform.name}");
-        }
-    }
-
     void CalculateTargetCamDis()
     {
         // Get ray distance
@@ -212,6 +155,8 @@ public class CameraBehavior : MonoBehaviour
         followCamera.LookAt(transform);
     }
     //////////////////////////////////////////////
+    // Outside functions
+    //////////////////////////////////////////////
     public void UpdateCamRotation(Vector2 camRotation)
     {
         rawGamepadInput = camRotation;
@@ -220,5 +165,24 @@ public class CameraBehavior : MonoBehaviour
     public void SetCollision(bool b)
     {
         camColliding = b;
+    }
+    //////////////////////////////////////////////
+    // Gizmos
+    //////////////////////////////////////////////
+    private void OnDrawGizmos()
+    {
+        Gizmos.matrix = transform.localToWorldMatrix;
+        
+        Gizmos.color = Color.red;
+        Gizmos.DrawCube(Vector3.zero, Vector3.one * .4f);
+        
+        
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawCube(new Vector3(0, 0, -maxCamDis), Vector3.one * .4f);
+
+        Gizmos.color = new Color(255, 165, 0);
+        Gizmos.DrawSphere(new Vector3(0, 0, -targetCamDis), .2f);
+
     }
 }

@@ -45,8 +45,7 @@ public class CameraBehavior : MonoBehaviour
     private RaycastHit[] originToCameraHits = new RaycastHit[0];
     private RaycastHit[] cameraToOriginHits = new RaycastHit[0];
 
-    private List<CamHitPoint> camHitPoints = new List<CamHitPoint>();
-    private Collider currentTargetCamDisCollider = null;
+    private CamHitPointList camHitPointList = new CamHitPointList();
 
     //////////////////////////////////////////////
     void FixedUpdate()
@@ -59,12 +58,10 @@ public class CameraBehavior : MonoBehaviour
         RotateCamera();
 
         // Camera Distance
-        CalculateTargetCamDis();
+        NewCalculateTargetCamDis();
+        //CalculateTargetCamDis();
         CalculateCurrentCamDis();
         SetCamDis();
-
-        SetCamHitPoints();
-        Temp();
     }
 
     void FollowPlayer()
@@ -153,93 +150,41 @@ public class CameraBehavior : MonoBehaviour
         followCamera.localPosition = new Vector3(0, 0, -currentCamDis);
     }
 
-    void SetCamHitPoints()
+    void NewCalculateTargetCamDis()
     {
+        // Get raycast hits
         originToCameraHits = Physics.RaycastAll(transform.position, -transform.forward, maxCamDis, camCollisionLayerMask);
 
         Vector3 maxCamDisPosition = transform.position + -transform.forward * maxCamDis;
-
         cameraToOriginHits = Physics.RaycastAll(maxCamDisPosition, transform.forward, maxCamDis, camCollisionLayerMask);
 
-        camHitPoints.Clear();
-        camHitPoints.Add(new CamHitPoint(maxCamDis, CamHitPointType.Front, null));
+        camHitPointList.Reset(maxCamDis);
 
+        // Convert RaycastHit[] into CamHitPointList
         foreach (RaycastHit hit in originToCameraHits)
         {
-            camHitPoints.Add(new CamHitPoint(hit.distance, CamHitPointType.Front, hit.collider));
+            camHitPointList.Add(new CamHitPoint(hit.distance, CamHitPointType.Front, hit.collider));
         }
 
         foreach (RaycastHit hit in cameraToOriginHits)
         {
-            camHitPoints.Add(new CamHitPoint(maxCamDis - hit.distance, CamHitPointType.Back, hit.collider));
+            camHitPointList.Add(new CamHitPoint(maxCamDis - hit.distance, CamHitPointType.Back, hit.collider));
         }
 
-        GeneralUtility.ClearConsole();
+        // Sort
+        Debug.Log(camHitPointList);
+        camHitPointList.Sort();
+        Debug.Log(camHitPointList);
 
-        Debug.Log(string.Join("--", camHitPoints));
+        // Get taret cam dis
+        camHitPointList.FindColliderIndex();
+        targetCamDis = camHitPointList.GetCamPosDistance();
 
-        camHitPoints.Sort(new CamHitPointComparer());
+        if (targetCamDis == -1f)
+            throw new InvalidOperationException("Error in CamHitPointList.GetCamPosDistance");
 
-        Debug.Log(string.Join("--", camHitPoints));
-    }
-
-    void Temp()
-    {
-        int colliderIndex = GetColliderIndex();
-
-        int newTargetIndex;
-        //*/
-        if (colliderIndex != -1)
-            newTargetIndex = GetNewTargetIndex(colliderIndex);
-        else
-            //*/
-            newTargetIndex = GetNewTargetIndex();
-
-        Debug.Log(newTargetIndex);
-        
-        targetCamDis = camHitPoints[newTargetIndex].distance;
-        currentTargetCamDisCollider = camHitPoints[newTargetIndex].collider;
-    }
-
-    int GetNewTargetIndex(int startIndex = 0)
-    {
-        float betweenWalls = .4f;
-        
-        for (int i = startIndex; i < camHitPoints.Count; i++)
-        {
-            if (camHitPoints[i].camHitPointType == CamHitPointType.Front)
-            {
-                if (i < camHitPoints.Count - 1)
-                {
-                    if (camHitPoints[i + 1].camHitPointType == CamHitPointType.Back)
-                    {
-                        float deltaDistance = camHitPoints[i].distance - camHitPoints[i + 1].distance;
-
-                        if (deltaDistance < 0)
-                        
-                            throw new InvalidOperationException("Distance between two walls cannot be less than zero");
-                        
-                        else if (deltaDistance >= betweenWalls)
-
-                            return i;
-                    }
-                }
-                else
-                    return i;
-
-            }
-        }
-
-        return -1;
-    }
-
-    int GetColliderIndex()
-    {
-        for (int i = 0; i < camHitPoints.Count; i++)
-            if (camHitPoints[i].collider == currentTargetCamDisCollider)
-                return i;
-
-        return -1;
+        if (camHitPointList.camHitPoints.Count > 1 && currentCamDis > targetCamDis)
+            currentCamDis = targetCamDis;
     }
     //////////////////////////////////////////////
     // Start functions
@@ -297,7 +242,7 @@ public class CameraBehavior : MonoBehaviour
 
         // Current cam dis is represented with the camera gizmo
 
-        foreach (CamHitPoint camHitPoint in camHitPoints)
+        foreach (CamHitPoint camHitPoint in camHitPointList)
         {
             if (camHitPoint.camHitPointType == CamHitPointType.Front)
             {
@@ -310,54 +255,5 @@ public class CameraBehavior : MonoBehaviour
 
             Gizmos.DrawSphere(new Vector3(0, 0, -camHitPoint.distance), .15f);
         }
-    }
-}
-
-public struct CamHitPoint
-{
-    public float distance;
-    public CamHitPointType camHitPointType; // Mabye change this to a boolean
-    public Collider collider;
-
-    public CamHitPoint(float _distance, CamHitPointType _camHitPointType, Collider _collider)
-    {
-        distance = _distance;
-        camHitPointType = _camHitPointType;
-        collider = _collider;
-    }
-
-    public override string ToString()
-    {
-        //return string.Format("{0}", distance);
-        //return string.Format("Distance: {0}, type: {1}, collider name: {2}", distance, camHitPointType.ToString(), collider.name);
-        if (collider == null)
-            return string.Format("{0}, {1: 0.00}", camHitPointType.ToString(), distance);
-        else
-            return string.Format("\"{0}\": {1}, {2: 0.00}", collider.name, camHitPointType.ToString(), distance);
-    }
-}
-
-public class CamHitPointList
-{
-    public List<CamHitPoint> camHitPoints;
-    private Collider lastCamPosCollider = null;
-
-    public override string ToString()
-    {
-        return string.Join("--", camHitPoints);
-    }
-}
-
-public enum CamHitPointType : byte
-{
-    Front,
-    Back
-}
-
-public class CamHitPointComparer : IComparer<CamHitPoint>
-{
-    int IComparer<CamHitPoint>.Compare(CamHitPoint p1, CamHitPoint p2)
-    {
-        return -p1.distance.CompareTo(p2.distance);
     }
 }

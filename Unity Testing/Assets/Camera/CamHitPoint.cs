@@ -6,22 +6,22 @@ using UnityEngine;
 public struct CamHitPoint
 {
     public float distance;
-    public CamHitPointType camHitPointType; // Mabye change this to a boolean
+    public CamHitPointType type; // Mabye change this to a boolean
     public Collider collider;
 
-    public CamHitPoint(float _distance, CamHitPointType _camHitPointType, Collider _collider)
+    public CamHitPoint(float _distance, CamHitPointType _type, Collider _collider)
     {
         distance = _distance;
-        camHitPointType = _camHitPointType;
+        type = _type;
         collider = _collider;
     }
 
     public override string ToString()
     {
         if (collider == null)
-            return string.Format("{0}, {1: 0.00}", camHitPointType.ToString(), distance);
+            return string.Format("{0}, {1: 0.00}", type.ToString(), distance);
         else
-            return string.Format("\"{0}\": {1}, {2: 0.00}", collider.name, camHitPointType.ToString(), distance);
+            return string.Format("\"{0}\": {1}, {2: 0.00}", collider.name, type.ToString(), distance);
     }
 }
 
@@ -32,12 +32,15 @@ public class CamHitPointList : IEnumerable
     public List<CamHitPoint> camHitPoints;
     public Collider lastCamPosCollider;
 
-    private int colliderIndex = -1;
+    private int colliderIndex;
+    private int currentCamDisIndex;
     //////////////////////////////////////////////
     public CamHitPointList()
     {
         camHitPoints = new List<CamHitPoint>();
         lastCamPosCollider = null;
+
+        ResetReferenceIndexes();
     }
 
     public IEnumerator GetEnumerator()
@@ -65,7 +68,7 @@ public class CamHitPointList : IEnumerable
         colliderIndex = -1;
 
         for (int i = 0; i < camHitPoints.Count; i++)
-            if (camHitPoints[i].camHitPointType == CamHitPointType.Front && camHitPoints[i].collider == lastCamPosCollider)
+            if (camHitPoints[i].type == CamHitPointType.Front && camHitPoints[i].collider == lastCamPosCollider)
             {
                 colliderIndex = i;
                 break;
@@ -96,11 +99,11 @@ public class CamHitPointList : IEnumerable
 
         for (int i = startIndex; i < camHitPoints.Count; i++)
         {
-            if (camHitPoints[i].camHitPointType == CamHitPointType.Front)
+            if (camHitPoints[i].type == CamHitPointType.Front || camHitPoints[i].type == CamHitPointType.MaxCamDis)
             {
                 if (i < camHitPoints.Count - 1)
                 {
-                    if (camHitPoints[i + 1].camHitPointType == CamHitPointType.Back)
+                    if (camHitPoints[i + 1].type == CamHitPointType.Back)
                     {
                         float deltaDistance = camHitPoints[i].distance - camHitPoints[i + 1].distance;
 
@@ -125,8 +128,71 @@ public class CamHitPointList : IEnumerable
     public void Reset(float maxCamDis)
     {
         camHitPoints.Clear();
-        camHitPoints.Add(new CamHitPoint(maxCamDis, CamHitPointType.Front, null));
+        camHitPoints.Add(new CamHitPoint(maxCamDis, CamHitPointType.MaxCamDis, null));
+
+        ResetReferenceIndexes();
+    }
+
+    void ResetReferenceIndexes()
+    {
         colliderIndex = -1;
+        currentCamDisIndex = -1;
+    }
+
+    //////////////////////////////////////////////
+    
+    public float ChangeCurrentCamDis(float currentCamDis)
+    {
+        InsertCurrentCamDis(currentCamDis);
+
+        Debug.Log(this);
+
+        if (IndexWithinWall(currentCamDisIndex))
+        {
+            float newCamDis = camHitPoints[currentCamDisIndex + 1].distance;
+
+            camHitPoints.RemoveAt(currentCamDisIndex);
+            InsertCurrentCamDis(newCamDis);
+
+            return newCamDis;
+        }
+            
+
+        return currentCamDis;
+    }
+
+    void InsertCurrentCamDis(float currentCamDis)
+    {
+        for (int i = 0; i < camHitPoints.Count; i++)
+        
+            if (currentCamDis > camHitPoints[i].distance)
+            {
+                camHitPoints.Insert(i, new CamHitPoint(currentCamDis, CamHitPointType.CurrentCamDis, null));
+                ResetReferenceIndexes();
+                currentCamDisIndex = i;
+                
+                break;
+            }
+
+        if (currentCamDisIndex == -1)
+        {
+            camHitPoints.Add(new CamHitPoint(currentCamDis, CamHitPointType.CurrentCamDis, null));
+            ResetReferenceIndexes();
+            currentCamDisIndex = camHitPoints.Count - 1;
+        }
+    }
+
+    bool IndexWithinWall(int index)
+    {
+        Debug.Log($"index: {index}, camHitPoints.Count: {camHitPoints.Count}");
+
+        if (0 < index && (camHitPoints[index - 1].type == CamHitPointType.Back || camHitPoints[index - 1].type == CamHitPointType.PastMaxBack))
+            return true;
+
+        if (index < camHitPoints.Count - 1 && (camHitPoints[index + 1].type == CamHitPointType.Front || camHitPoints[index + 1].type == CamHitPointType.PastMaxFront))
+            return true;
+
+        return false;
     }
 }
 
@@ -135,7 +201,11 @@ public class CamHitPointList : IEnumerable
 public enum CamHitPointType : byte
 {
     Front,
-    Back
+    Back,
+    MaxCamDis,
+    CurrentCamDis,
+    PastMaxFront,
+    PastMaxBack
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

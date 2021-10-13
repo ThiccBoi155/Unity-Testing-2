@@ -143,6 +143,8 @@ public class CameraBehavior : MonoBehaviour
     void CalculateCurrentCamDis()
     {
         currentCamDis = Mathf.Lerp(currentCamDis, targetCamDis, camDisFollowSpeed * Time.fixedDeltaTime);
+
+        currentCamDis = camHitPointList.ChangeCurrentCamDis(currentCamDis);
     }
 
     void SetCamDis()
@@ -152,24 +154,39 @@ public class CameraBehavior : MonoBehaviour
 
     void NewCalculateTargetCamDis()
     {
-        // Get raycast hits
-        originToCameraHits = Physics.RaycastAll(transform.position, -transform.forward, maxCamDis, camCollisionLayerMask);
+        float maxRayDistance;
 
-        Vector3 maxCamDisPosition = transform.position + -transform.forward * maxCamDis;
-        cameraToOriginHits = Physics.RaycastAll(maxCamDisPosition, transform.forward, maxCamDis, camCollisionLayerMask);
+        if (maxCamDis > currentCamDis)
+            maxRayDistance = maxCamDis;
+        else
+            maxRayDistance = currentCamDis;
+
+        // Get raycast hits
+        originToCameraHits = Physics.RaycastAll(transform.position, -transform.forward, maxRayDistance, camCollisionLayerMask);
+
+        Vector3 maxCamDisPosition = transform.position + -transform.forward * maxRayDistance;
+        cameraToOriginHits = Physics.RaycastAll(maxCamDisPosition, transform.forward, maxRayDistance, camCollisionLayerMask);
 
         camHitPointList.Reset(maxCamDis);
 
         // Convert RaycastHit[] into CamHitPointList
         foreach (RaycastHit hit in originToCameraHits)
         {
-            camHitPointList.Add(new CamHitPoint(hit.distance, CamHitPointType.Front, hit.collider));
+            if (hit.distance <= maxCamDis)
+                camHitPointList.Add(new CamHitPoint(hit.distance, CamHitPointType.Front, hit.collider));
+            else
+                camHitPointList.Add(new CamHitPoint(hit.distance, CamHitPointType.PastMaxFront, hit.collider));
         }
 
         foreach (RaycastHit hit in cameraToOriginHits)
         {
-            camHitPointList.Add(new CamHitPoint(maxCamDis - hit.distance, CamHitPointType.Back, hit.collider));
+            if (maxRayDistance - hit.distance <= maxCamDis)
+                camHitPointList.Add(new CamHitPoint(maxRayDistance - hit.distance, CamHitPointType.Back, hit.collider));
+            else
+                camHitPointList.Add(new CamHitPoint(maxRayDistance - hit.distance, CamHitPointType.PastMaxBack, hit.collider));
         }
+
+        GeneralUtility.ClearConsole();
 
         // Sort
         Debug.Log(camHitPointList);
@@ -182,9 +199,7 @@ public class CameraBehavior : MonoBehaviour
 
         if (targetCamDis == -1f)
             throw new InvalidOperationException("Error in CamHitPointList.GetCamPosDistance");
-
-        if (camHitPointList.camHitPoints.Count > 1 && currentCamDis > targetCamDis)
-            currentCamDis = targetCamDis;
+        
     }
     //////////////////////////////////////////////
     // Start functions
@@ -244,16 +259,42 @@ public class CameraBehavior : MonoBehaviour
 
         foreach (CamHitPoint camHitPoint in camHitPointList)
         {
-            if (camHitPoint.camHitPointType == CamHitPointType.Front)
+            float xOffset = 0f;
+
+            Color c;
+            switch (camHitPoint.type)
             {
-                Gizmos.color = Color.cyan;
-            }
-            else if (camHitPoint.camHitPointType == CamHitPointType.Back)
-            {
-                Gizmos.color = Color.blue;
+                case CamHitPointType.Front:
+                    ColorUtility.TryParseHtmlString("#2ECC71", out c);
+                    Gizmos.color = c;
+                    break;
+                case CamHitPointType.Back:
+                    ColorUtility.TryParseHtmlString("#9B59B6", out c);
+                    Gizmos.color = c;
+                    break;
+                case CamHitPointType.PastMaxFront:
+                    ColorUtility.TryParseHtmlString("#16A085", out c);
+                    Gizmos.color = c;
+                    break;
+                case CamHitPointType.PastMaxBack:
+                    ColorUtility.TryParseHtmlString("#8E44AD", out c);
+                    Gizmos.color = c;
+                    break;
+                case CamHitPointType.CurrentCamDis:
+                    ColorUtility.TryParseHtmlString("#2C3E50", out c);
+                    Gizmos.color = c;
+                    xOffset = .35f;
+                    break;
+                case CamHitPointType.MaxCamDis:
+                    ColorUtility.TryParseHtmlString("#E67E22", out c);
+                    Gizmos.color = c;
+                    break;
+                default:
+                    Gizmos.color = Color.red;
+                    break;
             }
 
-            Gizmos.DrawSphere(new Vector3(0, 0, -camHitPoint.distance), .15f);
+            Gizmos.DrawSphere(new Vector3(xOffset, 0, -camHitPoint.distance), .15f);
         }
     }
 }

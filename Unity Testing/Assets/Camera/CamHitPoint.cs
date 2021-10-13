@@ -145,7 +145,7 @@ public class CamHitPointList : IEnumerable
     {
         InsertCurrentCamDis(currentCamDis);
 
-        Debug.Log(this);
+        ///Debug.Log(this);
 
         if (IndexWithinWall(currentCamDisIndex))
         {
@@ -184,7 +184,7 @@ public class CamHitPointList : IEnumerable
 
     bool IndexWithinWall(int index)
     {
-        Debug.Log($"index: {index}, camHitPoints.Count: {camHitPoints.Count}");
+        ///Debug.Log($"index: {index}, camHitPoints.Count: {camHitPoints.Count}");
 
         if (0 < index && (camHitPoints[index - 1].type == CamHitPointType.Back || camHitPoints[index - 1].type == CamHitPointType.PastMaxBack))
             return true;

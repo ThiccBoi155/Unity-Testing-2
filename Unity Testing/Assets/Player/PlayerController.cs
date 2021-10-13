@@ -29,7 +29,8 @@ public class PlayerController : MonoBehaviour
         {
             playerMovementBehavior.SetJump(true);
         }
-        else
+
+        if (value.canceled)
         {
             playerMovementBehavior.SetJump(false);
         }

@@ -186,12 +186,12 @@ public class CameraBehavior : MonoBehaviour
                 camHitPointList.Add(new CamHitPoint(maxRayDistance - hit.distance, CamHitPointType.PastMaxBack, hit.collider));
         }
 
-        GeneralUtility.ClearConsole();
+        ///GeneralUtility.ClearConsole();
 
         // Sort
-        Debug.Log(camHitPointList);
+        ///Debug.Log(camHitPointList);
         camHitPointList.Sort();
-        Debug.Log(camHitPointList);
+        ///Debug.Log(camHitPointList);
 
         // Get taret cam dis
         camHitPointList.FindColliderIndex();

@@ -7,6 +7,9 @@ public class PlayerMovementBehavior : MonoBehaviour
 {
     [Header("Debug info")]
     public bool falling;
+    public bool jumpButtonHeld;
+    public bool onGround;
+
     public bool framePrint;
 
     [Header("Component Refrences")]
@@ -22,48 +25,9 @@ public class PlayerMovementBehavior : MonoBehaviour
     private Camera mainCamera;
 
     private Vector3 movementDirection;
-    private bool jumpButtonHeld;
-    private bool onGround;
-
-    //////////////////////////////////////////////
-    // Set values
-    //////////////////////////////////////////////
-    /*/
-    [Header("Set velocity")]
-    public Vector3 velocityToSet;
-    public bool setVelocityNow;
-
-    [Header("Set angular velocity")]
-    public Vector3 angularVelocityToSet;
-    public bool setAngularVelocityNow;
-
-    [Header("Set force")]
-    public Vector3 forceToSet;
-    public ForceMode forceModeToSet;
-    public bool setForceNow;
-    public bool setContinuously;
-
-    private void Update()
-    {
-        if (setVelocityNow)
-        {
-            playerRidgidbody.velocity = velocityToSet;
-            setVelocityNow = false;
-        }
-        if (setAngularVelocityNow)
-        {
-            playerRidgidbody.angularVelocity = angularVelocityToSet;
-            setAngularVelocityNow = false;
-        }
-        if (setForceNow)
-        {
-            playerRidgidbody.AddForce(forceToSet, forceModeToSet);
-            setForceNow = false;
-        }
-    }
-    //*/
-    //////////////////////////////////////////////
-
+    //private bool jumpButtonHeld;
+    //private bool onGround;
+    
     public void SetupBehavior()
     {
         SetGameplayCamera();
@@ -79,12 +43,17 @@ public class PlayerMovementBehavior : MonoBehaviour
         if (b)
             Jump();
 
-        jumpButtonHeld = true;
+        jumpButtonHeld = b;
     }
 
     public void UpdateMovementData(Vector3 newMovementDirection)
     {
         movementDirection = newMovementDirection;
+    }
+
+    public void GroundCollision(bool b)
+    {
+        onGround = b;
     }
     //////////////////////////////////////////////
     private void Update()
@@ -108,7 +77,6 @@ public class PlayerMovementBehavior : MonoBehaviour
 
     void MoveThePlayer()
     {
-        //Vector3 movement = CameraDirection(movementDirection) * movementSpeed * Time.deltaTime;
         Vector3 movement = CameraDirection(movementDirection) * movementSpeed * Time.fixedDeltaTime;
         playerRb.MovePosition(transform.position + movement);
     }
@@ -129,7 +97,11 @@ public class PlayerMovementBehavior : MonoBehaviour
     //////////////////////////////////////////////
     void Jump()
     {
-        playerRb.AddForce(new Vector3(0, jumpForce, 0), ForceMode.VelocityChange);
+        if (onGround)
+        {
+            playerRb.velocity = new Vector3(playerRb.velocity.x, jumpForce, playerRb.velocity.z);
+            //playerRb.AddForce(new Vector3(0, jumpForce, 0), ForceMode.VelocityChange);
+        }
     }
 
     void CheckJump()
@@ -139,7 +111,7 @@ public class PlayerMovementBehavior : MonoBehaviour
             playerRb.AddForce(new Vector3(0, -fallForce, 0), ForceMode.Acceleration);
             falling = true;
         }
-        /*
+        //*
         else if (playerRb.velocity.y > 0 && !jumpButtonHeld)
 
             playerRb.AddForce(new Vector3(0, -lowJumpForce, 0), ForceMode.Acceleration);
@@ -150,8 +122,10 @@ public class PlayerMovementBehavior : MonoBehaviour
         //*/
     }
 
+    /*/
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log(other.name);
     }
+    //*/
 }
